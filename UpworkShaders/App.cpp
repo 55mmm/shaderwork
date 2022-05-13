@@ -125,8 +125,8 @@ void App::MainLoop()
         float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
         // [Update node]
-        node1_->SetRotation(0.0, 100.f * time, 0.0);
-        node2_->SetRotation(0.0, -50.f * time, 0.f);
+        node1_->SetRotation(0.0, 25.f * time, 0.0);
+        node2_->SetRotation(0.0, -30.f * time, 0.f);
 
         // [Drawing]
         mRenderer->Prepare();

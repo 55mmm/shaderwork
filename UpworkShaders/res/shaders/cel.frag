@@ -16,10 +16,11 @@ uniform vec3 lightColor;
 uniform float reflectivity;
 uniform float shineDamper;
 
+uniform float celSteps;
+
 float cel(float f)
 {
-    const float steps = 4;
-    return floor(f * steps) / steps;
+    return floor(f * celSteps) / celSteps;
 }
 
 void main()

@@ -35,6 +35,11 @@ mQuadMesh(new QuadMesh)
     mCartoonShader->LoadUniformInt("celTexture", 2);
     mCartoonShader->Stop();
 
+    // Set number of cel steps
+    mCelShader->Start();
+    mCelShader->LoadUniformFloat("celSteps", 5.f);
+    mCelShader->Stop();
+
 }
 
 Renderer::~Renderer()
