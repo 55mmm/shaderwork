@@ -11,5 +11,5 @@ void main()
 {
     gl_Position = view * vec4(position, 0.0, 1.0);
 
-    passTextureCoords = vec2(position.x, position.y);
+    passTextureCoords = 0.5 * (position + vec2(1.0, 1.0));
 }
