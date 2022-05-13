@@ -56,13 +56,11 @@ private:
     // [Framebuffer objects & Quad mesh]
     QuadMesh* mQuadMesh;
 
-    void CreateFrameBuffers();
-    void DestroyFrameBuffers();
+    void CreateFrameBuffer();
+    void DestroyFrameBuffer();
 
-    GLuint mNormalsMapFBO;
+    GLuint mFrameBufferObject;
     GLuint mNormalsMap;
-
-    GLuint mDepthMapFBO;
     GLuint mDepthMap;
 
     

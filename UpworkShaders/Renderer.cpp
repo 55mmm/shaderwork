@@ -17,7 +17,7 @@ mNormalsShader(new Shader("normals")),
 mDepthShader(new Shader("depth")),
 mQuadMesh(new QuadMesh)
 {
-    CreateFrameBuffers();
+    CreateFrameBuffer();
 
     // Initialize shaders
     mCartoonShader->Initialize();
@@ -30,8 +30,8 @@ mQuadMesh(new QuadMesh)
 
     // Bind texture slot locations
     mCartoonShader->Start();
-    mCartoonShader->LoadUniformInt("tex0", 0);
-    mCartoonShader->LoadUniformInt("tex1", 1);
+    mCartoonShader->LoadUniformInt("normalMap", 0);
+    mCartoonShader->LoadUniformInt("depthMap", 1);
     mCartoonShader->Stop();
 
 }
@@ -44,7 +44,7 @@ Renderer::~Renderer()
 
     delete mQuadMesh;
 
-    DestroyFrameBuffers();
+    DestroyFrameBuffer();
 }
 
 void Renderer::Prepare()
@@ -93,7 +93,7 @@ void Renderer::Draw()
     glViewport(0, 0, mWidth, mHeight);
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);
-    glBindFramebuffer(GL_FRAMEBUFFER, mNormalsMapFBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, mFrameBufferObject);
     glClearColor(0.f, 0.f, 0.f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -138,7 +138,8 @@ void Renderer::Draw()
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    glDisable(GL_CULL_FACE);
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
 
     mCartoonShader->Start();
     mCartoonShader->LoadUniformMat4x4("view", glm::mat4(1.f));
@@ -170,8 +171,8 @@ void Renderer::Resize(int width, int height)
     BuildAndLoadProjectionMatrix();
 
     // Create framebuffers of new size
-    DestroyFrameBuffers();
-    CreateFrameBuffers();
+    DestroyFrameBuffer();
+    CreateFrameBuffer();
 }
 
 void Renderer::BuildAndLoadProjectionMatrix()
@@ -197,56 +198,44 @@ void Renderer::BuildAndLoadProjectionMatrix()
 
 }
 
-void Renderer::CreateFrameBuffers()
+void Renderer::CreateFrameBuffer()
 {
+    // Generate and bind FBO
+    glGenFramebuffers(1, &mFrameBufferObject);
+    glBindFramebuffer(GL_FRAMEBUFFER, mFrameBufferObject);
 
+    // Normals map
+    glGenTextures(1, &mNormalsMap);
+    glBindTexture(GL_TEXTURE_2D, mNormalsMap);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, mWidth, mHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);  
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
     // Depth map
-    glGenFramebuffers(1, &mDepthMapFBO);
     glGenTextures(1, &mDepthMap);
     glBindTexture(GL_TEXTURE_2D, mDepthMap);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, mWidth, mHeight, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
     float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
     glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
 
-    // Attach texture as framebuffer's depth buffer
-    glBindFramebuffer(GL_FRAMEBUFFER, mDepthMapFBO);
-    // glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, mDepthMap, 0);
-    glDrawBuffer(GL_NONE);
-    glReadBuffer(GL_NONE);
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-    // Normals map
-    glGenFramebuffers(1, &mNormalsMapFBO);
-    glBindFramebuffer(GL_FRAMEBUFFER, mNormalsMapFBO);
-
-    glGenTextures(1, &mNormalsMap);
-    glBindTexture(GL_TEXTURE_2D, mNormalsMap);
-    
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, mWidth, mHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);  
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
+    // Attach textures to framebuffer
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mNormalsMap, 0);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, mDepthMap, 0);
 
-
+    // Unbind FBO
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 }
 
-void Renderer::DestroyFrameBuffers()
+void Renderer::DestroyFrameBuffer()
 {
-    glDeleteFramebuffers(1, &mNormalsMapFBO);
-    glDeleteFramebuffers(1, &mDepthMapFBO);
+    glDeleteFramebuffers(1, &mFrameBufferObject);
 
     glDeleteTextures(1, &mNormalsMap);
     glDeleteTextures(1, &mDepthMap);

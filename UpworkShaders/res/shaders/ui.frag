@@ -4,9 +4,10 @@ in vec2 passTextureCoords;
 
 out vec4 fragmentColor;
 
-uniform sampler2D tex0;
+uniform sampler2D normalMap;
+uniform sampler2D depthMap;
 
 void main()
 {
-	fragmentColor = texture(tex0, passTextureCoords);
+	fragmentColor = texture(normalMap, passTextureCoords);
 }
