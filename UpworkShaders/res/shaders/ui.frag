@@ -9,5 +9,5 @@ uniform sampler2D depthMap;
 
 void main()
 {
-	fragmentColor = texture(normalMap, passTextureCoords);
+	fragmentColor = texture(depthMap, passTextureCoords);
 }

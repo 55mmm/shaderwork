@@ -146,8 +146,11 @@ void Renderer::Draw()
     glClearColor(.937f, .941f, .945f, 0.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+    // [Normals and depth maps]
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, mNormalsMap);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, mDepthMap);
 
     glBindVertexArray(mQuadMesh->GetVaoID());
     glEnableVertexAttribArray(0);
@@ -227,6 +230,7 @@ void Renderer::CreateFrameBuffer()
     // Attach textures to framebuffer
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mNormalsMap, 0);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, mDepthMap, 0);
+
 
     // Unbind FBO
     glBindFramebuffer(GL_FRAMEBUFFER, 0);

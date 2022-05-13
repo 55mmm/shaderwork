@@ -47,7 +47,7 @@ private:
     PointLight* mPointLight;
 
     const float mFOV = 40.f; // 45
-    const float mNearPlane = .1f;
+    const float mNearPlane = 1.f;
     const float mFarPlane = 100.f;
 
     // [Shaders]
