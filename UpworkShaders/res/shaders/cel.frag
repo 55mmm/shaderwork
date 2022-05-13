@@ -18,7 +18,7 @@ uniform float shineDamper;
 
 float cel(float f)
 {
-    const float steps = 156;
+    const float steps = 4;
     return floor(f * steps) / steps;
 }
 

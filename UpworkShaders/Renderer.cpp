@@ -128,7 +128,7 @@ void Renderer::Draw()
 
     // [Cel shading FBO]
     glBindFramebuffer(GL_FRAMEBUFFER, mCelShadingFBO);
-    glClearColor(0.f, 0.f, 0.f, 1.0f);
+    glClearColor(1.f, 1.f, 1.f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     mCelShader->Start();
     mCelShader->LoadUniformMat4x4("view", mCamera->GetViewMatrix());
