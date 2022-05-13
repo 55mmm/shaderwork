@@ -237,6 +237,10 @@ void Renderer::BuildAndLoadProjectionMatrix()
     mNormalsShader->LoadUniformMat4x4("projection", mProjection);
     mNormalsShader->Stop();
 
+    mCartoonShader->Start();
+    mCartoonShader->LoadUniformVec2("framebufferSize", glm::vec2(mWidth, mHeight));
+    mCartoonShader->Stop();
+
 }
 
 void Renderer::CreateFrameBuffers()
