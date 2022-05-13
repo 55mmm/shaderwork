@@ -131,8 +131,8 @@ void Renderer::Draw()
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-    // [Final rendering step]
 
+    // [Final rendering step]
 
     // Enable alpha blending
     glEnable(GL_BLEND);

@@ -87,15 +87,19 @@ void App::InitGL()
 void App::LoadResources()
 {
     sl_ = new SceneLoader;
-    mesh_ = new TexturedMesh(new Mesh(sl_->LoadScene("teapot.obj")), new Texture("red.png", true, false));
-    node_ = new Node(mesh_->GetMesh(), mesh_->GetTexture(), nullptr);
+    mesh1_ = new TexturedMesh(new Mesh(sl_->LoadScene("teapot.obj")), new Texture("red.png"));
+    mesh2_ = new TexturedMesh(new Mesh(sl_->LoadScene("car_1.fbx")), new Texture("car1.png"));
+    node1_ = new Node(mesh1_->GetMesh(), mesh1_->GetTexture(), 0.75f, 0.f, 0.f, 0.f, glm::vec3(2.f, 0.f, 0.f), nullptr);
+    node2_ = new Node(mesh2_->GetMesh(), mesh2_->GetTexture(), 1.5f, 0.f, 0.f, 0.f, glm::vec3(-3.f, 0.f, -1.f), nullptr);
 }
 
 void App::UnloadResources()
 {
     delete sl_;
-    delete mesh_;
-    delete node_;
+    delete mesh1_;
+    delete mesh2_;
+    delete node1_;
+    delete node2_;
 }
 
 void App::MainLoop()
@@ -121,11 +125,12 @@ void App::MainLoop()
         float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
         // [Update node]
-        node_->SetRotation(0.0, 100.f * time, 0.0);
+        node1_->SetRotation(0.0, 100.f * time, 0.0);
 
         // [Drawing]
         mRenderer->Prepare();
-        mRenderer->Add(node_);
+        mRenderer->Add(node1_);
+        mRenderer->Add(node2_);
         mRenderer->Draw();
 
         // [Refreshing]
