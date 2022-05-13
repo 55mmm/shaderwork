@@ -12,8 +12,8 @@ uniform vec2 framebufferSize;
 
 void make_kernel(inout vec4 n[9], sampler2D tex, vec2 coord)
 {
-	float w = 1.0 / framebufferSize.x;
-	float h = 1.0 / framebufferSize.y;
+	float w = framebufferSize.x / 750000.f;
+	float h = framebufferSize.y / 750000.f;
 
 	n[0] = texture2D(tex, coord + vec2( -w, -h));
 	n[1] = texture2D(tex, coord + vec2(0.0, -h));
