@@ -88,7 +88,7 @@ void App::LoadResources()
 {
     sl_ = new SceneLoader;
     mesh1_ = new TexturedMesh(new Mesh(sl_->LoadScene("teapot.obj")), new Texture("red.png"));
-    mesh2_ = new TexturedMesh(new Mesh(sl_->LoadScene("car_1.fbx")), new Texture("car1.png"));
+    mesh2_ = new TexturedMesh(new Mesh(sl_->LoadScene("car_1.fbx")), new Texture("car1.png", true, false));
     node1_ = new Node(mesh1_->GetMesh(), mesh1_->GetTexture(), 0.75f, 0.f, 0.f, 0.f, glm::vec3(2.f, 0.f, 0.f), nullptr);
     node2_ = new Node(mesh2_->GetMesh(), mesh2_->GetTexture(), 1.5f, 0.f, 0.f, 0.f, glm::vec3(-3.f, 0.f, -1.f), nullptr);
 }

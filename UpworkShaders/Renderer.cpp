@@ -128,10 +128,46 @@ void Renderer::Draw()
 
     // [Cel shading FBO]
     glBindFramebuffer(GL_FRAMEBUFFER, mCelShadingFBO);
-    glClearColor(0.f, 1.f, 0.f, 1.0f);
+    glClearColor(0.f, 0.f, 0.f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    mCelShader->Start();
+    mCelShader->LoadUniformMat4x4("view", mCamera->GetViewMatrix());
+    mCelShader->LoadUniformVec3("lightPosition", mPointLight->GetPosition());
+    mCelShader->LoadUniformVec3("lightColor", mPointLight->GetColor());
+    for (auto pair1: mNodes)
+    {
+        auto mesh = pair1.first;
+        auto textureMap = pair1.second;
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, mDepthMap);
+        glBindVertexArray(mesh->GetVaoID());
+        glEnableVertexAttribArray(0);
+        glEnableVertexAttribArray(1);
+        glEnableVertexAttribArray(2);
+        for (auto pair2 : textureMap)
+        {
+            auto texture = pair2.first;
+            auto nodes = pair2.second;
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, texture->GetID());
+            for (auto node : nodes)
+            {
+                mCelShader->LoadUniformMat4x4("model", *node->GetGlobalModelMatrix());
+                mCelShader->LoadUniformFloat("reflectivity", node->GetReflectivity());
+                mCelShader->LoadUniformFloat("shineDamper", node->GetShineDamper());
 
+                glDrawElements(GL_TRIANGLES, mesh->GetNumIndices(), GL_UNSIGNED_INT, 0);
 
+            }
+
+        }
+        glDisableVertexAttribArray(0);
+        glDisableVertexAttribArray(1);
+        glDisableVertexAttribArray(2);
+
+    }
+
+    mCelShader->Stop();
 
     // [Final rendering step]
 
@@ -247,6 +283,7 @@ void Renderer::CreateFrameBuffers()
 
     // Attach texture to framebuffer
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mCelTexture, 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, mDepthMap, 0);
 
     // Unbind FBO
     glBindFramebuffer(GL_FRAMEBUFFER, 0);

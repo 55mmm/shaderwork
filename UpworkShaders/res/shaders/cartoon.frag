@@ -10,5 +10,5 @@ uniform sampler2D celTexture;
 
 void main()
 {
-	fragmentColor = texture(celTexture, passTextureCoords);
+	fragmentColor = mix(texture(normalMap, passTextureCoords), texture(celTexture, passTextureCoords), 0.5);
 }
