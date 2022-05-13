@@ -51,17 +51,18 @@ private:
     const float mFarPlane = 100.f;
 
     // [Shaders]
-    Shader *mCartoonShader, *mNormalsShader, *mDepthShader;
+    Shader *mCelShader, *mNormalsShader, *mCartoonShader;
 
     // [Framebuffer objects & Quad mesh]
     QuadMesh* mQuadMesh;
 
-    void CreateFrameBuffer();
-    void DestroyFrameBuffer();
+    void CreateFrameBuffers();
+    void DestroyFrameBuffers();
 
-    GLuint mFrameBufferObject;
+    GLuint mNormalsAndDepthFBO, mCelShadingFBO; // First one is attached to normals and depth texture, second one to cel shading
     GLuint mNormalsMap;
     GLuint mDepthMap;
+    GLuint mCelTexture;
 
     
 };

@@ -126,6 +126,7 @@ void App::MainLoop()
 
         // [Update node]
         node1_->SetRotation(0.0, 100.f * time, 0.0);
+        node2_->SetRotation(0.0, -50.f * time, 0.f);
 
         // [Drawing]
         mRenderer->Prepare();

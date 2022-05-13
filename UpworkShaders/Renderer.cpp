@@ -12,17 +12,17 @@ mHeight(height),
 mAspectRatio((float) width / height),
 mCamera(camera),
 mPointLight(light),
-mCartoonShader(new Shader("ui")),
+mCelShader(new Shader("cel")),
 mNormalsShader(new Shader("normals")),
-mDepthShader(new Shader("depth")),
+mCartoonShader(new Shader("cartoon")),
 mQuadMesh(new QuadMesh)
 {
-    CreateFrameBuffer();
+    CreateFrameBuffers();
 
     // Initialize shaders
-    mCartoonShader->Initialize();
+    mCelShader->Initialize();
     mNormalsShader->Initialize();
-    mDepthShader->Initialize();
+    mCartoonShader->Initialize();
 
 
     // Projection matrix
@@ -32,19 +32,20 @@ mQuadMesh(new QuadMesh)
     mCartoonShader->Start();
     mCartoonShader->LoadUniformInt("normalMap", 0);
     mCartoonShader->LoadUniformInt("depthMap", 1);
+    mCartoonShader->LoadUniformInt("celTexture", 2);
     mCartoonShader->Stop();
 
 }
 
 Renderer::~Renderer()
 {
-    delete mCartoonShader;
+    delete mCelShader;
     delete mNormalsShader;
-    delete mDepthShader;
+    delete mCartoonShader;
 
     delete mQuadMesh;
 
-    DestroyFrameBuffer();
+    DestroyFrameBuffers();
 }
 
 void Renderer::Prepare()
@@ -88,30 +89,28 @@ void Renderer::Add(const std::vector<Node*>& nodes)
 
 void Renderer::Draw()
 {
-    // Render normals map as usual
-
+    // General
     glViewport(0, 0, mWidth, mHeight);
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LEQUAL);
-    glBindFramebuffer(GL_FRAMEBUFFER, mFrameBufferObject);
-    glClearColor(0.f, 0.f, 0.f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    mNormalsShader->Start();
-    mNormalsShader->LoadUniformMat4x4("view", mCamera->GetViewMatrix());
-
+    // Disable face culling for our models
     glDisable(GL_CULL_FACE);
     // glCullFace(GL_BACK);
 
+
+    // [Normals and depth framebuffer]
+    glBindFramebuffer(GL_FRAMEBUFFER, mNormalsAndDepthFBO);
+    glClearColor(0.f, 0.f, 0.f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    // Render normals map
+    mNormalsShader->Start();
+    mNormalsShader->LoadUniformMat4x4("view", mCamera->GetViewMatrix());
     for (auto pair : mNodes)
     {
         auto mesh = pair.first;
         auto textureMap = pair.second;
-
         glBindVertexArray(mesh->GetVaoID());
         glEnableVertexAttribArray(0);
         glEnableVertexAttribArray(1);
-
         for (auto pair : textureMap)
         {
             for (auto node : pair.second)
@@ -122,17 +121,22 @@ void Renderer::Draw()
                 glDrawElements(GL_TRIANGLES, mesh->GetNumIndices(), GL_UNSIGNED_INT, 0);
             }
         }
-
         glDisableVertexAttribArray(0);
         glDisableVertexAttribArray(1);
     }
-
     mNormalsShader->Stop();
 
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    // [Cel shading FBO]
+    glBindFramebuffer(GL_FRAMEBUFFER, mCelShadingFBO);
+    glClearColor(0.f, 1.f, 0.f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 
 
     // [Final rendering step]
+
+    // Unbind fbo
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     // Enable alpha blending
     glEnable(GL_BLEND);
@@ -151,6 +155,8 @@ void Renderer::Draw()
     glBindTexture(GL_TEXTURE_2D, mNormalsMap);
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, mDepthMap);
+    glActiveTexture(GL_TEXTURE2);
+    glBindTexture(GL_TEXTURE_2D, mCelTexture);
 
     glBindVertexArray(mQuadMesh->GetVaoID());
     glEnableVertexAttribArray(0);
@@ -174,8 +180,8 @@ void Renderer::Resize(int width, int height)
     BuildAndLoadProjectionMatrix();
 
     // Create framebuffers of new size
-    DestroyFrameBuffer();
-    CreateFrameBuffer();
+    DestroyFrameBuffers();
+    CreateFrameBuffers();
 }
 
 void Renderer::BuildAndLoadProjectionMatrix()
@@ -187,25 +193,21 @@ void Renderer::BuildAndLoadProjectionMatrix()
         mFarPlane
     );
 
-    // mCartoonShader->Start();
-    // mCartoonShader->LoadUniformMat4x4("projection", mProjection);
-    // mCartoonShader->Stop();
+    mCelShader->Start();
+    mCelShader->LoadUniformMat4x4("projection", mProjection);
+    mCelShader->Stop();
 
     mNormalsShader->Start();
     mNormalsShader->LoadUniformMat4x4("projection", mProjection);
     mNormalsShader->Stop();
 
-    mDepthShader->Start();
-    mDepthShader->LoadUniformMat4x4("projection", mProjection);
-    mDepthShader->Stop();
-
 }
 
-void Renderer::CreateFrameBuffer()
+void Renderer::CreateFrameBuffers()
 {
-    // Generate and bind FBO
-    glGenFramebuffers(1, &mFrameBufferObject);
-    glBindFramebuffer(GL_FRAMEBUFFER, mFrameBufferObject);
+    // Generate and bind normals & depth attachment FBO
+    glGenFramebuffers(1, &mNormalsAndDepthFBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, mNormalsAndDepthFBO);
 
     // Normals map
     glGenTextures(1, &mNormalsMap);
@@ -232,16 +234,32 @@ void Renderer::CreateFrameBuffer()
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, mDepthMap, 0);
 
 
+    // Create and bind cel shading FBO
+    glGenFramebuffers(1, &mCelShadingFBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, mCelShadingFBO);
+    glGenTextures(1, &mCelTexture);
+    glBindTexture(GL_TEXTURE_2D, mCelTexture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, mWidth, mHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);  
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    // Attach texture to framebuffer
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mCelTexture, 0);
+
     // Unbind FBO
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 }
 
-void Renderer::DestroyFrameBuffer()
+void Renderer::DestroyFrameBuffers()
 {
-    glDeleteFramebuffers(1, &mFrameBufferObject);
+    glDeleteFramebuffers(1, &mNormalsAndDepthFBO);
+    glDeleteFramebuffers(1, &mCelShadingFBO);
 
     glDeleteTextures(1, &mNormalsMap);
     glDeleteTextures(1, &mDepthMap);
+    glDeleteTextures(1, &mCelTexture);
 }
 
