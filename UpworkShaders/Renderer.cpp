@@ -206,7 +206,7 @@ void Renderer::DrawCartoon()
     mCartoonShader->Stop();
 }
 
-void Renderer::DrawMirror(Node* regular, Node* floor, Node* inverted)
+void Renderer::DrawMirror(const std::vector<Node*>& regular, const std::vector<Node*>& inverted, Node* floor)
 {
     glViewport(0, 0, mWidth, mHeight);
     glClearColor(1.0, 1.0, 1.0, 1.0);
@@ -221,23 +221,26 @@ void Renderer::DrawMirror(Node* regular, Node* floor, Node* inverted)
 
     // Render regular nodes
 
-    glBindVertexArray(regular->GetMesh()->GetVaoID());
-    glEnableVertexAttribArray(0);
-    glEnableVertexAttribArray(1);
-    glEnableVertexAttribArray(2);
-    
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, regular->GetTexture()->GetID());
-    
-    mMirrorShader->LoadUniformMat4x4("model", *regular->GetGlobalModelMatrix());
-    mMirrorShader->LoadUniformFloat("reflectivity", regular->GetReflectivity());
-    mMirrorShader->LoadUniformFloat("shineDamper", regular->GetShineDamper());
+    for (auto node : regular)
+    {
+        glBindVertexArray(node->GetMesh()->GetVaoID());
+        glEnableVertexAttribArray(0);
+        glEnableVertexAttribArray(1);
+        glEnableVertexAttribArray(2);
+        
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, node->GetTexture()->GetID());
+        
+        mMirrorShader->LoadUniformMat4x4("model", *node->GetGlobalModelMatrix());
+        mMirrorShader->LoadUniformFloat("reflectivity", node->GetReflectivity());
+        mMirrorShader->LoadUniformFloat("shineDamper", node->GetShineDamper());
 
-    glDrawElements(GL_TRIANGLES, regular->GetMesh()->GetNumIndices(), GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, node->GetMesh()->GetNumIndices(), GL_UNSIGNED_INT, 0);
 
-    glDisableVertexAttribArray(0);
-    glDisableVertexAttribArray(1);
-    glDisableVertexAttribArray(2);
+        glDisableVertexAttribArray(0);
+        glDisableVertexAttribArray(1);
+        glDisableVertexAttribArray(2);
+    }
 
     // Enable stencil testing and set test function and operations to write ones to all selected stencils.
 
@@ -276,24 +279,27 @@ void Renderer::DrawMirror(Node* regular, Node* floor, Node* inverted)
 
     // Render inverted nodes
 
-    glBindVertexArray(inverted->GetMesh()->GetVaoID());
-    glEnableVertexAttribArray(0);
-    glEnableVertexAttribArray(1);
-    glEnableVertexAttribArray(2);
-    
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, inverted->GetTexture()->GetID());
-    
-    mMirrorShader->LoadUniformVec3("lightColor", glm::vec3(0.25f));
-    mMirrorShader->LoadUniformMat4x4("model", *inverted->GetGlobalModelMatrix());
-    mMirrorShader->LoadUniformFloat("reflectivity", inverted->GetReflectivity());
-    mMirrorShader->LoadUniformFloat("shineDamper", inverted->GetShineDamper());
+    for (auto node : inverted)
+    {
+        glBindVertexArray(node->GetMesh()->GetVaoID());
+        glEnableVertexAttribArray(0);
+        glEnableVertexAttribArray(1);
+        glEnableVertexAttribArray(2);
+        
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, node->GetTexture()->GetID());
+        
+        mMirrorShader->LoadUniformVec3("lightColor", glm::vec3(0.25f));
+        mMirrorShader->LoadUniformMat4x4("model", *node->GetGlobalModelMatrix());
+        mMirrorShader->LoadUniformFloat("reflectivity", node->GetReflectivity());
+        mMirrorShader->LoadUniformFloat("shineDamper", node->GetShineDamper());
 
-    glDrawElements(GL_TRIANGLES, inverted->GetMesh()->GetNumIndices(), GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, node->GetMesh()->GetNumIndices(), GL_UNSIGNED_INT, 0);
 
-    glDisableVertexAttribArray(0);
-    glDisableVertexAttribArray(1);
-    glDisableVertexAttribArray(2);
+        glDisableVertexAttribArray(0);
+        glDisableVertexAttribArray(1);
+        glDisableVertexAttribArray(2);
+    }
 
     // Disable stencil testing
     glDisable(GL_STENCIL_TEST);

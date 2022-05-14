@@ -29,7 +29,7 @@ public:
     void Add(const std::vector<Node*>& nodes);
 
     void DrawCartoon();
-    void DrawMirror(Node* regular, Node* floor, Node* reflection);
+    void DrawMirror(const std::vector<Node*>& regular, const std::vector<Node*>& inverted, Node* floor);
 
     void Resize(int width, int height);
 

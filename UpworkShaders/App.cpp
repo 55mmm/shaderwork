@@ -146,7 +146,9 @@ void App::MainLoop()
         mRenderer->Add(node2_);
         mRenderer->Add(node3_);
         // mRenderer->DrawCartoon();
-        mRenderer->DrawMirror(node1_, node3_, node4_);
+        std::vector<Node*> regular{node1_, node2_};
+        std::vector<Node*> inverted{node4_, node5_};
+        mRenderer->DrawMirror(regular, inverted, node3_);
 
         // [Refreshing]
         glfwSwapInterval(1);
