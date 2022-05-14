@@ -39,7 +39,8 @@ vec3 make_edge(sampler2D tex)
 vec3 edge_color(vec3 raw)
 {
 	float sum = dot(raw, vec3(1));
-	return mix(vec3(1.0), vec3(0.0), -0.05 + sum / 5.f);
+	float average = sum / 3.0;
+	return vec3(1.0 - clamp(2.0 * average - 0.01, 0.0, 1.0));
 }
 
 void main()
