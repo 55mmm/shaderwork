@@ -144,9 +144,9 @@ void App::MainLoop()
         mRenderer->Prepare();
         mRenderer->Add(node1_);
         mRenderer->Add(node2_);
-        mRenderer->Add(node4_);
-        mRenderer->Add(node5_);
-        mRenderer->DrawCartoon();
+        mRenderer->Add(node3_);
+        // mRenderer->DrawCartoon();
+        mRenderer->DrawMirror(node1_, node3_, node4_);
 
         // [Refreshing]
         glfwSwapInterval(1);

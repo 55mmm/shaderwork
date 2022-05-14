@@ -29,7 +29,7 @@ public:
     void Add(const std::vector<Node*>& nodes);
 
     void DrawCartoon();
-    void DrawMirror();
+    void DrawMirror(Node* regular, Node* floor, Node* reflection);
 
     void Resize(int width, int height);
 
@@ -52,7 +52,7 @@ private:
     const float mFarPlane = 100.f;
 
     // [Shaders]
-    Shader *mCelShader, *mNormalsShader, *mCartoonShader;
+    Shader *mCelShader, *mNormalsShader, *mCartoonShader, *mMirrorShader;
 
     // [Framebuffer objects & Quad mesh]
     QuadMesh* mQuadMesh;
