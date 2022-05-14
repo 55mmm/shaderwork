@@ -11,9 +11,13 @@
 
 App::App()
 {
+    // mCamera = new Camera(
+    //     glm::vec3(0.f, 7.0f, 7.f),
+    //     glm::vec3(0.f, 1.5f, 0.f)
+    // );
     mCamera = new Camera(
-        glm::vec3(0.f, 7.0f, 7.f),
-        glm::vec3(0.f, 1.5f, 0.f)
+        glm::vec3(0.f, 5.0f, 7.f),
+        glm::vec3(0.f, 0.f, 0.f)
     );
     InitGL();
     LoadResources();
@@ -89,8 +93,12 @@ void App::LoadResources()
     sl_ = new SceneLoader;
     mesh1_ = new TexturedMesh(new Mesh(sl_->LoadScene("teapot.obj")), new Texture("red.png"));
     mesh2_ = new TexturedMesh(new Mesh(sl_->LoadScene("car_1.fbx")), new Texture("car1.png", true, false));
+    mesh3_ = new TexturedMesh(new Mesh(sl_->LoadScene("unit_quad.fbx")), new Texture("gray.png"));
     node1_ = new Node(mesh1_->GetMesh(), mesh1_->GetTexture(), 0.75f, 0.f, 0.f, 0.f, glm::vec3(2.f, 0.f, 0.f), nullptr);
     node2_ = new Node(mesh2_->GetMesh(), mesh2_->GetTexture(), 1.5f, 0.f, 0.f, 0.f, glm::vec3(-3.f, 0.f, -1.f), nullptr);
+    node3_ = new Node(mesh3_->GetMesh(), mesh3_->GetTexture(), 15.f, 0.f, 30.f, 0.f, glm::vec3(), nullptr);
+    node4_ = new Node(mesh1_->GetMesh(), mesh1_->GetTexture(), 1.f, 180.f, 0.f, 0.f, glm::vec3(), node1_);
+    node5_ = new Node(mesh2_->GetMesh(), mesh2_->GetTexture(), 1.f, 180.f, 0.f, 0.f, glm::vec3(), node2_);
 }
 
 void App::UnloadResources()
@@ -98,8 +106,12 @@ void App::UnloadResources()
     delete sl_;
     delete mesh1_;
     delete mesh2_;
+    delete mesh3_;
     delete node1_;
     delete node2_;
+    delete node3_;
+    delete node4_;
+    delete node5_;
 }
 
 void App::MainLoop()
@@ -132,7 +144,9 @@ void App::MainLoop()
         mRenderer->Prepare();
         mRenderer->Add(node1_);
         mRenderer->Add(node2_);
-        mRenderer->Draw();
+        mRenderer->Add(node4_);
+        mRenderer->Add(node5_);
+        mRenderer->DrawCartoon();
 
         // [Refreshing]
         glfwSwapInterval(1);

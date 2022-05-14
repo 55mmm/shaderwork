@@ -28,7 +28,8 @@ public:
     void Add(Node* node);
     void Add(const std::vector<Node*>& nodes);
 
-    void Draw();
+    void DrawCartoon();
+    void DrawMirror();
 
     void Resize(int width, int height);
 

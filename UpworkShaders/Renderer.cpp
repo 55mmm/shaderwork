@@ -92,7 +92,7 @@ void Renderer::Add(const std::vector<Node*>& nodes)
         Add(n);
 }
 
-void Renderer::Draw()
+void Renderer::DrawCartoon()
 {
     // General
     glViewport(0, 0, mWidth, mHeight);
@@ -179,10 +179,6 @@ void Renderer::Draw()
     // Unbind fbo
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-    // Enable alpha blending
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
 
@@ -201,15 +197,14 @@ void Renderer::Draw()
 
     glBindVertexArray(mQuadMesh->GetVaoID());
     glEnableVertexAttribArray(0);
-
     glDrawArrays(GL_TRIANGLE_STRIP, 0, mQuadMesh->GetNumVertices());
-
-
     glDisableVertexAttribArray(0);
-    mCartoonShader->Stop();
 
-    // Disable alpha blending
-    glDisable(GL_BLEND);
+    mCartoonShader->Stop();
+}
+
+void Renderer::DrawMirror()
+{
 
 }
 

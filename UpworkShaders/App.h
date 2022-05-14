@@ -34,6 +34,6 @@ private:
 
     // Resources
     SceneLoader* sl_;
-    TexturedMesh *mesh1_, *mesh2_;
-    Node *node1_, *node2_;
+    TexturedMesh *mesh1_, *mesh2_, *mesh3_;
+    Node *node1_, *node2_, *node3_, *node4_, *node5_;
 };
