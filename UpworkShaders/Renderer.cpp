@@ -206,7 +206,7 @@ void Renderer::DrawCartoon()
     mCartoonShader->Stop();
 }
 
-void Renderer::DrawMirror(const std::vector<Node*>& regular, const std::vector<Node*>& inverted, Node* floor)
+void Renderer::DrawMirror(const std::vector<Node*>& nodes, Node* floor)
 {
     glViewport(0, 0, mWidth, mHeight);
     glClearColor(1.0, 1.0, 1.0, 1.0);
@@ -218,10 +218,11 @@ void Renderer::DrawMirror(const std::vector<Node*>& regular, const std::vector<N
     mMirrorShader->LoadUniformMat4x4("view", mCamera->GetViewMatrix());
     mMirrorShader->LoadUniformVec3("lightPosition", mPointLight->GetPosition());
     mMirrorShader->LoadUniformVec3("lightColor", mPointLight->GetColor());
+    mMirrorShader->LoadUniformInt("flipY", 0);
 
     // Render regular nodes
 
-    for (auto node : regular)
+    for (auto node : nodes)
     {
         glBindVertexArray(node->GetMesh()->GetVaoID());
         glEnableVertexAttribArray(0);
@@ -261,6 +262,7 @@ void Renderer::DrawMirror(const std::vector<Node*>& regular, const std::vector<N
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, floor->GetTexture()->GetID());
     
+    mMirrorShader->LoadUniformVec3("lightColor", glm::vec3(0.25f));
     mMirrorShader->LoadUniformMat4x4("model", *floor->GetGlobalModelMatrix());
     mMirrorShader->LoadUniformFloat("reflectivity", floor->GetReflectivity());
     mMirrorShader->LoadUniformFloat("shineDamper", floor->GetShineDamper());
@@ -278,8 +280,10 @@ void Renderer::DrawMirror(const std::vector<Node*>& regular, const std::vector<N
     glDepthMask(GL_TRUE); // Write to depth buffer
 
     // Render inverted nodes
+    mMirrorShader->LoadUniformVec3("lightColor", glm::vec3(0.25f));
+    mMirrorShader->LoadUniformInt("flipY", 1);
 
-    for (auto node : inverted)
+    for (auto node : nodes)
     {
         glBindVertexArray(node->GetMesh()->GetVaoID());
         glEnableVertexAttribArray(0);
@@ -289,7 +293,6 @@ void Renderer::DrawMirror(const std::vector<Node*>& regular, const std::vector<N
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, node->GetTexture()->GetID());
         
-        mMirrorShader->LoadUniformVec3("lightColor", glm::vec3(0.25f));
         mMirrorShader->LoadUniformMat4x4("model", *node->GetGlobalModelMatrix());
         mMirrorShader->LoadUniformFloat("reflectivity", node->GetReflectivity());
         mMirrorShader->LoadUniformFloat("shineDamper", node->GetShineDamper());

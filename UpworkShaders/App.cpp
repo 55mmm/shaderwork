@@ -92,13 +92,11 @@ void App::LoadResources()
 {
     sl_ = new SceneLoader;
     mesh1_ = new TexturedMesh(new Mesh(sl_->LoadScene("teapot.obj")), new Texture("red.png"));
-    mesh2_ = new TexturedMesh(new Mesh(sl_->LoadScene("car_1.fbx")), new Texture("car1.png", true, false));
+    mesh2_ = new TexturedMesh(new Mesh(sl_->LoadScene("suzanne.obj")), new Texture("red.png", true, false));
     mesh3_ = new TexturedMesh(new Mesh(sl_->LoadScene("unit_quad.fbx")), new Texture("gray.png"));
-    node1_ = new Node(mesh1_->GetMesh(), mesh1_->GetTexture(), 0.75f, 0.f, 0.f, 0.f, glm::vec3(2.f, 0.f, 0.f), nullptr);
-    node2_ = new Node(mesh2_->GetMesh(), mesh2_->GetTexture(), 1.5f, 0.f, 0.f, 0.f, glm::vec3(-3.f, 0.f, -1.f), nullptr);
+    node1_ = new Node(mesh1_->GetMesh(), mesh1_->GetTexture(), 0.75f, 0.f, 0.f, 0.f, glm::vec3(2.f, .5f, 0.f), nullptr);
+    node2_ = new Node(mesh2_->GetMesh(), mesh2_->GetTexture(), 1.25f, 0.f, 0.f, 0.f, glm::vec3(-3.f, .0f, -1.f), nullptr);
     node3_ = new Node(mesh3_->GetMesh(), mesh3_->GetTexture(), 15.f, 0.f, 30.f, 0.f, glm::vec3(), nullptr);
-    node4_ = new Node(mesh1_->GetMesh(), mesh1_->GetTexture(), 1.f, 180.f, 0.f, 0.f, glm::vec3(), node1_);
-    node5_ = new Node(mesh2_->GetMesh(), mesh2_->GetTexture(), 1.f, 180.f, 0.f, 0.f, glm::vec3(), node2_);
 }
 
 void App::UnloadResources()
@@ -110,8 +108,6 @@ void App::UnloadResources()
     delete node1_;
     delete node2_;
     delete node3_;
-    delete node4_;
-    delete node5_;
 }
 
 void App::MainLoop()
@@ -139,6 +135,9 @@ void App::MainLoop()
         // [Update node]
         node1_->SetRotation(0.0, 25.f * time, 0.0);
         node2_->SetRotation(0.0, -30.f * time, 0.f);
+        float y = 1.f + std::sin(time / 1.f);
+        node1_->SetPosition(glm::vec3(node1_->GetPosition().x, y, node1_->GetPosition().z));
+        node2_->SetPosition(glm::vec3(node2_->GetPosition().x, 0.5f + y, node2_->GetPosition().z));
 
         // [Drawing]
         mRenderer->Prepare();
@@ -146,9 +145,8 @@ void App::MainLoop()
         mRenderer->Add(node2_);
         mRenderer->Add(node3_);
         // mRenderer->DrawCartoon();
-        std::vector<Node*> regular{node1_, node2_};
-        std::vector<Node*> inverted{node4_, node5_};
-        mRenderer->DrawMirror(regular, inverted, node3_);
+        std::vector<Node*> mirroredNodes{node1_, node2_};
+        mRenderer->DrawMirror(mirroredNodes, node3_);
 
         // [Refreshing]
         glfwSwapInterval(1);
