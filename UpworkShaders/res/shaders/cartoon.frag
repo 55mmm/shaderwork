@@ -38,13 +38,17 @@ vec3 make_edge(sampler2D tex)
 
 vec3 edge_color(vec3 raw)
 {
-	float sum = dot(raw, vec3(1));
-	float average = sum / 3.0;
-	return vec3(1.0 - clamp(2.0 * average - 0.01, 0.0, 1.0));
+	float f = clamp(length(raw), 0.0, 2.0) / 2.0;
+	if (f < 0.25)
+		return vec3(1.0);
+	return vec3(1.0 - smoothstep(0.25, 1.0, f));
 }
 
 void main()
 {
 	vec3 edge = edge_color(make_edge(normalMap) + make_edge(depthMap));
+	// Outline only
+	// fragmentColor = vec4(edge, 1.0);
+	// Colored output
 	fragmentColor = vec4(edge * texture(celTexture, passTextureCoords).xyz, 1.0);
 }
