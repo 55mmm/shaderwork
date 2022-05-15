@@ -11,14 +11,14 @@
 
 App::App()
 {
-    mCamera = new Camera(
-        glm::vec3(0.f, 7.0f, 7.f),
-        glm::vec3(0.f, 2.75f, 0.f)
-    );
     // mCamera = new Camera(
-    //     glm::vec3(0.f, 5.0f, 7.f),
-    //     glm::vec3(0.f, 0.f, 0.f)
+    //     glm::vec3(0.f, 7.0f, 7.f),
+    //     glm::vec3(0.f, 2.75f, 0.f)
     // );
+    mCamera = new Camera(
+        glm::vec3(0.f, 6.0f, 9.f),
+        glm::vec3(0.f, 1.5f, 0.f)
+    );
     InitGL();
     LoadResources();
 }
@@ -93,7 +93,7 @@ void App::LoadResources()
     sl_ = new SceneLoader;
     mesh1_ = new TexturedMesh(new Mesh(sl_->LoadScene("teapot.obj")), new Texture("red.png"));
     mesh2_ = new TexturedMesh(new Mesh(sl_->LoadScene("suzanne.obj")), new Texture("blue.png", true, false));
-    mesh3_ = new TexturedMesh(new Mesh(sl_->LoadScene("unit_quad.fbx")), new Texture("gray.png"));
+    mesh3_ = new TexturedMesh(new Mesh(sl_->LoadScene("plane.obj")), new Texture("gray.png"));
     node1_ = new Node(mesh1_->GetMesh(), mesh1_->GetTexture(), 0.75f, 0.f, 0.f, 0.f, glm::vec3(2.f, .5f, 0.f), nullptr);
     node2_ = new Node(mesh2_->GetMesh(), mesh2_->GetTexture(), 1.25f, 0.f, 0.f, 0.f, glm::vec3(-3.f, .0f, -1.f), nullptr);
     node3_ = new Node(mesh3_->GetMesh(), mesh3_->GetTexture(), 15.f, 0.f, 30.f, 0.f, glm::vec3(), nullptr);
@@ -144,8 +144,8 @@ void App::MainLoop()
         mRenderer->Add(node1_);
         mRenderer->Add(node2_);
         std::vector<Node*> mirroredNodes{node1_, node2_};
-        // mRenderer->DrawMirror(mirroredNodes, node3_);
-        mRenderer->DrawCartoon();
+        mRenderer->DrawMirror(mirroredNodes, node3_);
+        // mRenderer->DrawCartoon();
 
         // [Refreshing]
         glfwSwapInterval(1);
